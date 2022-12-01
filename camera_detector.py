@@ -26,6 +26,7 @@ def checkCam(index, use_usb, use_v4l2):
     try:
         video_capture = cv2.VideoCapture(cap_index, cap_api)
         if not video_capture.isOpened():
+            print("Failure!")
             return False
         else:
             if "--view" in sys.argv:
@@ -34,9 +35,10 @@ def checkCam(index, use_usb, use_v4l2):
                 video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
                 while True:
                     _, frame = video_capture.read()
-                    cv2.imshow("Stream", frame)
+                    cv2.imshow(f"Camera {index}", frame)
 
                     if cv2.waitKey(1) == 27:
+                        cv2.destroyAllWindows()
                         break
             return True
     except Exception as e:
@@ -44,30 +46,49 @@ def checkCam(index, use_usb, use_v4l2):
 
 
 def checkIndex(index):
+    out = []
+
     # Test using USB and CAP_ANY
     result = checkCam(i, True, False)
+    out.append({"index": i,
+                "use_usb": True,
+                "use_v4l2": False,
+                "result": result})
     if result:
-        print("Success! Aborting further tests")
+        print("Success!")
         if not "--all" in sys.argv:
-            return True
+            return out
 
     # Test using USB and CAP_V4L2
     result = checkCam(i, True, True)
+    out.append({"index": i,
+                "use_usb": True,
+                "use_v4l2": True,
+                "result": result})
     if result:
-        print("Success! Aborting further tests")
-        return True
+        print("Success!")
+        if not "--all" in sys.argv:
+            return out
 
-    return False
+    return out
 
 
 if __name__ == "__main__":
     if sys.argv[1] in ["-h", "--help"]:
         print("""Arguments:
     --view      show current camera stream
-    --all       dont quit on success""")
+    --all       dont quit on success (check all indices)""")
     else:
-        for i in range(10):
-            if checkIndex(i):
-                print("All done")
-                if not "--all" in sys.argv:
-                    break
+        all_results = {}
+        for i in range(6):
+            all_results[i] = checkIndex(i)
+            print(f"Done testing index {i}")
+            if not "--all" in sys.argv:
+                break
+        for index in all_results.keys():
+            print(f"\nResults for index {index}:")
+            for result in all_results[index]:
+                print("\t", end="")
+                print("use_usb: " + str(result["use_usb"]), end=", ")
+                print("use_v4l2: " + str(result["use_v4l2"]), end=", ")
+                print("functional: " + str(result["result"]))
