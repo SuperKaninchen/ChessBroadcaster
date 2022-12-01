@@ -23,6 +23,7 @@ args = parser.parse_args()
 
 broadcast_info = BroadcastInfo()
 
+
 def mark_corners(frame, augmented_corners, rotation_count):
     height, width = frame.shape[:2]
     if rotation_count == 1:
@@ -90,17 +91,18 @@ board_dimensions = (7, 7)
 
 for _ in range(10):
     ret, frame = cap.read()
-    if ret == False:
+    if not ret:
         print("Error reading frame. Please check your webcam connection.")
         continue
 
 while True:
     ret, frame = cap.read()
-    if ret == False:
+    if not ret:
         print("Error reading frame. Please check your webcam connection.")
         continue
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    retval, corners = cv2.findChessboardCorners(gray, patternSize=board_dimensions)
+    retval, corners = cv2.findChessboardCorners(
+        gray, patternSize=board_dimensions)
 
     if retval:
         if SHOW_INFO:
@@ -142,7 +144,7 @@ while True:
             y = corner1[0][1] + (corner1[0][1] - corner2[0][1])
             row.append((x, y))
 
-            for corner in corners[i * 7 : (i + 1) * 7]:
+            for corner in corners[i * 7: (i + 1) * 7]:
                 x = corner[0][0]
                 y = corner[0][1]
                 row.append((x, y))
@@ -221,7 +223,8 @@ while True:
             elif response & 0xFF == ord("q"):
                 cv2.imwrite(
                     "images/calibrated_board.jpg",
-                    mark_corners(frame.copy(), augmented_corners, rotation_count),
+                    mark_corners(frame.copy(), augmented_corners,
+                                 rotation_count),
                 )
                 break
         break
@@ -238,10 +241,13 @@ def euclidean_distance(first, second):
     return sqrt((first[0] - second[0]) ** 2 + (first[1] - second[1]) ** 2)
 
 
-first_row = euclidean_distance(augmented_corners[1][1], augmented_corners[1][7])
+first_row = euclidean_distance(
+    augmented_corners[1][1], augmented_corners[1][7])
 last_row = euclidean_distance(augmented_corners[7][1], augmented_corners[7][7])
-first_column = euclidean_distance(augmented_corners[1][1], augmented_corners[7][1])
-last_column = euclidean_distance(augmented_corners[1][7], augmented_corners[7][7])
+first_column = euclidean_distance(
+    augmented_corners[1][1], augmented_corners[7][1])
+last_column = euclidean_distance(
+    augmented_corners[1][7], augmented_corners[7][7])
 
 if abs(first_row - last_row) >= abs(first_column - last_column):
     if first_row >= last_row:
@@ -256,6 +262,7 @@ else:
 
 print("Side view compensation" + str(side_view_compensation))
 print("Rotation count " + str(rotation_count))
+# XXX: check path to exist before building file!
 filename = f"./constants/constants{cam_id}.bin"
 with open(filename, "wb") as outfile:
     pickle.dump(
