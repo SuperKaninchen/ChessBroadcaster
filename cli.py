@@ -1,4 +1,6 @@
 import sys
+import json
+import wsgi
 
 
 def parseArgs(args):
@@ -18,17 +20,30 @@ def parseArgs(args):
 
 
 def loadConfig(cfg):
-    pass
+    with open(cfg) as f:
+        cfg_dict = json.loads(f.read())
+    return cfg_dict
+
+
+def printHelp():
+    print("help text placeholder")
 
 
 if __name__ == "__main__":
-    if sys.argv[1] in ["-h", "--help"]:
-        print("Help")
+    if sys.argv[1] in ["-h", "--help"]:  # User needs help
+        printHelp()
+        sys.exit()
+
+    argdict = parseArgs(sys.argv[1:])  # Pass all args except filename
+
+    if "cfg" in argdict:  # User has specified a config file to read
+        config = loadConfig(argdict["cfg"])
     else:
-        argdict = parseArgs(sys.argv[1:])
-        if "cfg" in argdict:
-            loadConfig(argdict["cfg"])
-        if not "command" in argdict:
-            print("Error: no command specified!")
-            sys.exit()
-        print(argdict)
+        config = {}
+
+    if not "command" in argdict:  # User hasn't specified any subcommand
+        print("Error: no command specified!")
+        sys.exit()
+
+    if argdict["command"] == "flask":
+        wsgi.runApp(config["flask"])  # Run flask app with custom config
