@@ -5,6 +5,10 @@ import chess.svg
 
 app = Flask(__name__)
 board = chess.Board()
+default_config = {
+    "host": "127.0.0.1",
+    "port": 5001
+}
 
 
 @app.route("/show")
@@ -22,9 +26,11 @@ def updateBoard():
     return "Success"
 
 
-def runApp(config):
+def runApp(config=None):
+    if not config:
+        config = default_config
     app.run(host=config["host"], port=config["port"])
 
 
 if __name__ == "__main__":
-    runApp("127.0.0.1", 5001)  # Run flask app with default config
+    runApp()  # Run flask app with default config

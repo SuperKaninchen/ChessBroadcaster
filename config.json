@@ -2,5 +2,9 @@
     "flask": {
         "host": "0.0.0.0",
         "port": 5000
+    },
+    "cam": {
+        "index": 4,
+        "api": "any"
     }
 }
