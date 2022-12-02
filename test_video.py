@@ -2,21 +2,23 @@
 
 import cv2
 
-from broadcast_info import BroadcastInfo
 
-from camera_info import CameraInfo
-video_capture = CameraInfo.video_capture
+def testCamera(cam_cfg):
 
-if not video_capture.isOpened():
-    raise Exception("Could not open video device")
+    cam_id = cam_cfg["index"]
+    cam_api = cv2.CAP_ANY if cam_cfg["api"] == "any" else cv2.CAP_V4L2
+    video_capture = cv2.VideoCapture(cam_id, cam_api)
 
-# Set properties. Each returns === True on success (i.e. correct resolution)
-video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    if not video_capture.isOpened():
+        raise Exception("Could not open video device")
 
-while True:
-    _, frame = video_capture.read()
-    cv2.imshow("Stream", frame)
+    # Set properties. Each returns === True on success (i.e. correct resolution)
+    video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
-    if cv2.waitKey(1) == 27:
-        break
+    while True:
+        _, frame = video_capture.read()
+        cv2.imshow("Stream", frame)
+
+        if cv2.waitKey(1) == 27:
+            break
